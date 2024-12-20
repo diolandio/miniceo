@@ -1,0 +1,28 @@
+import { supabase } from '../supabase';
+
+export async function uploadStoreLogo(file: File) {
+  try {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('store_logos')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('store_logos')
+      .getPublicUrl(filePath);
+
+    return {
+      url: publicUrl,
+      path: filePath,
+      name: fileName
+    };
+  } catch (error) {
+    console.error('Error uploading store logo:', error);
+    throw error;
+  }
+}
